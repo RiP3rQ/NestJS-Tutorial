@@ -3,6 +3,7 @@ import { AppModule } from '../src/app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
 import * as pactum from 'pactum';
+import { EditUserDto } from 'src/user/dto';
 
 describe('App E2E', () => {
   let app: INestApplication;
@@ -117,7 +118,29 @@ describe('App E2E', () => {
       });
     });
 
-    describe('Edit Me', () => {});
+    describe('Edit Me', () => {
+      it('should fail with invalid jwt', () => {
+        return pactum.spec().patch('/users').expectStatus(401);
+      });
+
+      it('should edit user correctly', () => {
+        const dto: EditUserDto = {
+          firstName: 'Essa',
+          lastName: 'Bessa',
+        };
+
+        return pactum
+          .spec()
+          .patch('/users')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .withBody(dto)
+          .expectStatus(200)
+          .expectBodyContains(dto.firstName)
+          .expectBodyContains(dto.lastName);
+      });
+    });
   });
 
   describe('Bookmark', () => {
